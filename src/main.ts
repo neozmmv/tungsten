@@ -116,7 +116,7 @@ app.post("/", async(c: Context) => {
     }
 
    const encoded = encodeBase64Url(new TextEncoder().encode(body.url).buffer)
-   const url = `${Bun.env.API_URL ?? `http://localhost:${Bun.env.PORT}`}/${encoded}`
+   const url = `${Bun.env.API_URL ?? `http://localhost:${Bun.env.PORT}`}/${encoded}?dl=1`
 
    const metaProc = Bun.spawn({
     cmd: [
