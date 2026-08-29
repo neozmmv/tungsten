@@ -1,9 +1,14 @@
 services:
   api:
-    image: "neozmmv/tungsten:latest"
+    build:
+      dockerfile: Dockerfile
     ports:
       - "9007:9007"
     environment:
       - PORT=9007
       # uncommenting this changes 'localhost' for the given hostname on url responses
       # - API_URL="http://192.168.0.11"
+    develop:
+      watch:
+        - path: "."
+          action: rebuild
