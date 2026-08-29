@@ -1,11 +1,31 @@
 import { Context, Hono } from "hono";
 import type { RequestBody } from "./interfaces";
 import { decodeBase64Url, encodeBase64Url } from "hono/utils/encode";
-import { isYoutubeUrl } from "./utils";
+import { isYoutubeUrl, YT_DLP_FORMAT_FLAGS } from "./utils";
 import { randomUUID } from 'crypto'
 import { unlink, rm } from "fs/promises";
+import { cors } from "hono/cors";
+import { startTime } from "hono/timing";
 
 const app = new Hono();
+
+app.use("*", cors());
+
+app.get("/", async(c: Context) => {
+    return c.json({
+        cobalt: {
+            "version": "0.1.0",
+            "url": Bun.env.API_URL ?? `http://localhost:${Bun.env.PORT}`,
+            startTime,
+            services: ["youtube"],
+        },
+        git: {
+            "branch": "master",
+            "commit": Bun.env.GIT_COMMIT ?? "unknown",
+            "remote": "neozmmv/tungsten"
+        }
+    })
+});
 
 app.get("/:url", async (c: Context) => {
     const url = c.req.param("url") as string
@@ -14,12 +34,12 @@ app.get("/:url", async (c: Context) => {
         decodedUrl = new TextDecoder().decode(decodeBase64Url(url))
     } catch(err) {
         if(err instanceof DOMException && err.name == "InvalidCharacterError") {
-            return c.json({"error": "Invalid URL"}, 400);
+            return c.json({ status: "error", error: { code: "error.api.invalid_url" } }, 400);
         }
         throw err;
     }
     if(!isYoutubeUrl(decodedUrl)) {
-        return c.json({"error": "Invalid YouTube URL!"})
+        return c.json({ status: "error", error: { code: "error.api.not_youtube" } }, 400);
     }
     // logic for downloading and serving the video
 
@@ -29,8 +49,7 @@ app.get("/:url", async (c: Context) => {
     const proc = Bun.spawn({
         cmd: [
             "yt-dlp",
-            "-f", "bestvideo+bestaudio/best",
-            "--merge-output-format", "mp4",
+            ...YT_DLP_FORMAT_FLAGS,
             "-o", `${jobDir}/%(uploader)s - %(title)s.%(ext)s`,
             "--print", "after_move:filepath",
             decodedUrl,
@@ -43,7 +62,7 @@ app.get("/:url", async (c: Context) => {
 
     if (exitCode !== 0) {
         await rm(jobDir, { recursive: true, force: true });
-        return c.json({ error: "yt-dlp failed to download the video" }, 500);
+        return c.json({ status: "error", error: { code: "error.api.download_failed" } }, 500);
     }
     
     const filepath = stdout.trim();
@@ -89,11 +108,11 @@ app.post("/", async(c: Context) => {
 
     const body = await c.req.json<RequestBody>();
     if(!body.url) {
-        return c.json({"error": "Must provide YouTube video URL!"}, 400)
+        return c.json({ status: "error", error: { code: "error.api.missing_url" } }, 400);
     }
 
     if(!isYoutubeUrl(body.url)) {
-        return c.json({"error": "Invalid YouTube link!"})
+        return c.json({ status: "error", error: { code: "error.api.not_youtube" } }, 400);
     }
 
    const encoded = encodeBase64Url(new TextEncoder().encode(body.url).buffer)
@@ -102,6 +121,7 @@ app.post("/", async(c: Context) => {
    const metaProc = Bun.spawn({
     cmd: [
         "yt-dlp",
+        ...YT_DLP_FORMAT_FLAGS,
         "--print", "filename",
         "-o", "%(uploader)s - %(title)s.%(ext)s",
         "--skip-download",
