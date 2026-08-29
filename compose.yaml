@@ -7,3 +7,4 @@ services:
       - PORT=9007
       # uncommenting this changes 'localhost' for the given hostname on url responses
       # - API_URL="http://192.168.0.11"
+    restart: unless-stopped
