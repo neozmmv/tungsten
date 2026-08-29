@@ -3,9 +3,9 @@ services:
     build:
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "9007:9007"
     environment:
-      - PORT=3000
+      - PORT=9007
       # uncommenting this changes 'localhost' for the given hostname on url responses
       # - API_URL="http://192.168.0.11"
     develop:
