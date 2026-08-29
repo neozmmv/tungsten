@@ -90,6 +90,7 @@ app.get("/:url", async (c: Context) => {
     return new Response(stream, {
         headers: {
             "Content-Type": "video/mp4",
+            "Content-Length": file.size.toString(),
             "Content-Disposition": `attachment; filename="${filename.replace(/"/g, '\\"')}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
         },
     });
