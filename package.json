@@ -1,0 +1,15 @@
+{
+  "name": "tungsten",
+  "module": "src/main.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^7"
+  },
+  "dependencies": {
+    "hono": "^4.13.5"
+  }
+}
