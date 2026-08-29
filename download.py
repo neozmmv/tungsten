@@ -42,7 +42,7 @@ file_destination = os.path.join(DOWNLOAD_PATH, video_name)
 d_res = requests.get(url_to_download, stream=True)
 if d_res.status_code != 200:
     print(f"Requesting {URL} went wrong! HTTP Status Code: {d_res.status_code}")
-    print(res.text)
+    print(d_res.text)
     exit(1)
  
 with open(file_destination, "wb") as f:
