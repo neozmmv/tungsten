@@ -4,8 +4,18 @@ import { decodeBase64Url, encodeBase64Url } from "hono/utils/encode";
 
 const app = new Hono();
 
-app.get("/", async (c: Context) => {
-    return c.json({"msg": "Hello!"})
+app.get("/:url", async (c: Context) => {
+    const url = c.req.param("url") as string
+    let decodedUrl;
+    try {
+        decodedUrl = new TextDecoder().decode(decodeBase64Url(url))
+    } catch(err) {
+        if(err instanceof DOMException && err.name == "InvalidCharacterError") {
+            return c.json({"error": "Invalid URL"}, 400);
+        }
+        throw err;
+    }
+    return c.json({decodedUrl})
 })
 
 app.post("/", async(c: Context) => {
@@ -15,12 +25,9 @@ app.post("/", async(c: Context) => {
     }
 
    const encoded = encodeBase64Url(new TextEncoder().encode(body.url).buffer)
-   const decoded = decodeBase64Url(encoded)
-   const decodedString = new TextDecoder().decode(decoded)
+   const url = `${Bun.env.API_URL ?? `http://localhost:${Bun.env.PORT}`}/${encoded}`
 
-   return c.json({
-    encoded, decodedString
-   })
+   return c.json(url)
 })
 
 export default {
