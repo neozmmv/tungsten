@@ -7,7 +7,7 @@ services:
     environment:
       - PORT=9007
       # uncommenting this changes 'localhost' for the given hostname on url responses
-      # - API_URL="http://192.168.0.11"
+      # - API_URL=http://192.168.0.11:9007
     develop:
       watch:
         - path: "."
