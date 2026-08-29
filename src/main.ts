@@ -28,12 +28,12 @@ app.get("/:url", async (c: Context) => {
 
     const proc = Bun.spawn({
         cmd: [
-        "yt-dlp",
-        "-f", "bestvideo+bestaudio/best",
-        "--merge-output-format", "mp4",
-        "-o", `${jobDir}/%(uploader)s - %(title)s.%(ext)s`,
-        "--print", "after_move:filepath",
-        decodedUrl,
+            "yt-dlp",
+            "-f", "bestvideo+bestaudio/best",
+            "--merge-output-format", "mp4",
+            "-o", `${jobDir}/%(uploader)s - %(title)s.%(ext)s`,
+            "--print", "after_move:filepath",
+            decodedUrl,
         ],
         stdout: "pipe",
     });
@@ -77,6 +77,16 @@ app.get("/:url", async (c: Context) => {
 })
 
 app.post("/", async(c: Context) => {
+    // cobalt.tools contract headers
+    const accept = c.req.header("Accept");
+    const contentType = c.req.header("Content-Type");
+
+    if (accept !== "application/json" || contentType !== "application/json") {
+        return c.json(
+            {status: "error", error: { code: "error.api.invalid_headers" }}, 400
+        );
+    }
+
     const body = await c.req.json<RequestBody>();
     if(!body.url) {
         return c.json({"error": "Must provide YouTube video URL!"}, 400)
@@ -89,7 +99,29 @@ app.post("/", async(c: Context) => {
    const encoded = encodeBase64Url(new TextEncoder().encode(body.url).buffer)
    const url = `${Bun.env.API_URL ?? `http://localhost:${Bun.env.PORT}`}/${encoded}`
 
-   return c.json({url})
+   const metaProc = Bun.spawn({
+    cmd: [
+        "yt-dlp",
+        "--print", "filename",
+        "-o", "%(uploader)s - %(title)s.%(ext)s",
+        "--skip-download",
+        body.url,
+    ],
+        stdout: "pipe",
+    });
+
+    const filename = (await new Response(metaProc.stdout).text()).trim();
+    const exitCode = await metaProc.exited;
+
+    if (exitCode !== 0) {
+        return c.json({ status: "error", error: { code: "error.api.fetch.fail" } }, 500);
+    }
+
+   return c.json({
+        "status": "tunnel",
+        url,
+        filename
+   })
 })
 
 export default {
