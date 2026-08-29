@@ -6,6 +6,7 @@ import os
 # This script was made for using with cobalt.tools, now adapted for tungsten.
 # cobalt runs on port 9000, tungsten runs on 9007
 # you can change the HOST var to match your IP and port (cobalt or tungsten)
+
 HOST = "http://localhost:9007"
 URL = None
 DOWNLOAD_PATH = os.path.join(os.path.expanduser("~"), "Downloads")
