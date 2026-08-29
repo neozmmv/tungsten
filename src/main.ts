@@ -14,7 +14,7 @@ app.use("*", cors());
 app.get("/", async(c: Context) => {
     return c.json({
         cobalt: {
-            "version": "0.1.0",
+            "version": Bun.env.VERSION ?? "dev",
             "url": Bun.env.API_URL ?? `http://localhost:${Bun.env.PORT}`,
             startTime,
             services: ["youtube"],
