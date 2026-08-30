@@ -1,6 +1,7 @@
 import requests
 import sys
 import os
+import time
 
 # cobalt tools / tungsten self hosted api download script
 # This script was made for using with cobalt.tools, now adapted for tungsten.
@@ -26,6 +27,8 @@ BODY = {
     "url": URL
 }
 
+start = time.time()
+print("Download started...")
 # POST response
 res = requests.post(HOST, json=BODY, headers=HEADERS)
 if res.status_code != 200:
@@ -56,3 +59,4 @@ if saved_file_size == 0:
     exit(1)
     
 print(f"File saved to {file_destination}")
+print(f"Downloaded in {time.time() - start:.2f}s")

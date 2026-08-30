@@ -28,7 +28,8 @@ app.get("/", async(c: Context) => {
 });
 
 app.get("/:url", async (c: Context) => {
-    const url = c.req.param("url") as string
+    c.env.timeout(c.req.raw, 0); // disables timeout for download route
+    const url = c.req.param("url") as string;
     let decodedUrl;
     try {
         decodedUrl = new TextDecoder().decode(decodeBase64Url(url))
