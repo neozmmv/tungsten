@@ -8,4 +8,6 @@ export function isYoutubeUrl(url: string){
 export const YT_DLP_FORMAT_FLAGS = [
     "-f", "bestvideo+bestaudio/best",
     "--merge-output-format", "mp4",
+    // bun ships in the image already, so use it instead of pulling in deno
+    "--js-runtimes", "bun",
 ];

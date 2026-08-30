@@ -150,5 +150,8 @@ app.post("/", async(c: Context) => {
 
 export default {
     port: Bun.env.PORT,
-    fetch: app.fetch
+    fetch: app.fetch,
+    // yt-dlp download+merge can easily exceed Bun's 10s default idle timeout
+    // before any response bytes are written, dropping the connection mid-download
+    idleTimeout: 255,
 }
