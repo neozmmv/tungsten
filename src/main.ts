@@ -87,11 +87,14 @@ app.get("/:url", async (c: Context) => {
         },
     });
 
+    // doesnt die with strange non ascii chars
+    const asciiSafeFilename = filename.replace(/[^\x20-\x7E]/g, "_").replace(/"/g, '\\"');
+
     return new Response(stream, {
         headers: {
             "Content-Type": "video/mp4",
             "Content-Length": file.size.toString(),
-            "Content-Disposition": `attachment; filename="${filename.replace(/"/g, '\\"')}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
+            "Content-Disposition": `attachment; filename="${asciiSafeFilename}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
         },
     });
 })
